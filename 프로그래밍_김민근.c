@@ -1,21 +1,3 @@
-#include <stdio.h>
-#include <termio.h>
-#include <stdlib.h>
-#include <time.h>
-int getch(void) { //getch 함수
-	int ch;
-	struct termios buf;
-	struct termios save;
-	tcgetattr(0, &save);
-	buf = save;
-	buf.c_lflag &= ~(ICANON | ECHO );
-	buf.c_cc[VMIN] = 1;
-	buf.c_cc[VTIME] = 0;
-	tcsetattr(0, TCSAFLUSH, &buf);
-	ch = getchar();
-	tcsetattr(0, TCSAFLUSH, &save);
-	return ch;
-}
 
 void main(){
 	char a[][30] = {"I like A.", "I like B.", "I like C.", "I like D.", "I like E.", "I like F.", "I like G.", "I like H.", "I like I.", "I like J.", "I like K.", "I like L.", "I like M.", "I like N.", "I like O.", "I like P.", "I like Q.", "I like R.", "I like S.", "I like T.", "I like U.", "I like V.", "I like W.", "I like X.", "I like Y.", "I like Z.", "I like a.", "I like b.", "I like c.", "I like d."};
@@ -35,7 +17,7 @@ void main(){
 		while(1){
 			cnt = 0; //cnt 초기화
 			printf(">> 영문 타자 연습 프로그램 : 짧은 글 연습 <<\n"); 
-			printf("진행도 : %d%%, 현재타수 : %u, 최고타수 : %u, 정확도 : %d%%\n", 
+			printf("진행도 : %d%%, 현재타수 : %u, 최고타수 : %u, 정확도 : %d%%  ([Esc] 키를 통해 메뉴로)\n", 
 					pgs, ct, ht, acc);
 			for (int i = 0; a[x][i] != '\0'; i++){ // a 배열 출력
 				printf("%c", a[x][i]);
@@ -47,9 +29,11 @@ void main(){
 			b[cnt2] = getch(); // getch 함수를 통해 b 배열에 저장
 			//end = clock(); 
 			time(&end); //타자 치고 나서 시간 end에 저장
-			if (b[cnt2] == '\n') // 개행 입력시 반복문 나감
+			if (b[cnt2] == 27) // Esc 키를 통해 중간에 나갈 수 있음
+				return;
+			else if (b[cnt2] == '\n') // 개행 입력시 반복문 나감
 				break;
-			if (b[cnt2] == 127) // 백스페이스 구현
+			else if (b[cnt2] == 127) // 백스페이스 구현
 				cnt2 = cnt2 - 2;
 			wl = 0; // 오타 개수 초기화
 			for (int i = 0; i <= cnt2; i++)
@@ -80,8 +64,8 @@ void main(){
 		printf(">> 영문 타자 연습 프로그램 : 짧은 글 연습 <<\n"); 
 		printf("진행도 : %d%%, 현재타수 : %u, 최고타수 : %u, 정확도 : %d%%\n", 
 				pgs, ct, ht, acc);
-		printf("짧은 글 연습이 종료되었습니다. [Enter] 키를 통해 메뉴로 돌아가세요.");
-		if (getch() == '\n') // Enter 입력시 프로그램 종료
+		printf("짧은 글 연습이 종료되었습니다. [Esc] 키를 통해 메뉴로 돌아가세요.");
+		if (getch() == 27) // Esc 입력시 프로그램 종료
 			break;
 		system("clear");
 	}
