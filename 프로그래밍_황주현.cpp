@@ -2,14 +2,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <conio.h>
+//#include <conio.h>
+#include <sys/time.h>	
+#include <unistd.h>	
+#include <termios.h>
 
 #define TRUE 1
 #define FALSE 0
 
 void clearBuffer();	// 버퍼 정리
 int menu();		// 메뉴
-
+int getch();
 void spacePractice();	// 자리 연습
 void wordPractice();	// 단어 연습
 void shortScript();	// 짧은글 연습
@@ -26,11 +29,28 @@ void clearBuffer()
 	while (getchar() != '\n');
 }
 
+int getch(void)  
+{  
+  int ch;  
+  struct termios buf;  
+  struct termios save;  
+  
+   tcgetattr(0, &save);  
+   buf = save;  
+   buf.c_lflag &= ~(ICANON|ECHO);  
+   buf.c_cc[VMIN] = 1;  
+   buf.c_cc[VTIME] = 0;  
+   tcsetattr(0, TCSAFLUSH, &buf);  
+   ch = getchar();  
+   tcsetattr(0, TCSAFLUSH, &save);  
+   return ch;  
+}  
+  
 int menu()
 {
+	
 	int input;
-	//system("clear");	// 리눅스 clear	
-	system("cls");
+	system("clear");
 
 	printf(">> 영문 타자 연습 프로그램 <<\n");
 	printf("1) 자리 연습	2) 낱말 연습\n\
@@ -39,7 +59,6 @@ int menu()
 번호를 선택하세요: ");
 	scanf("%d", &input);
 	clearBuffer();
-
 	switch (input)
 	{
 	case 1:
@@ -61,7 +80,8 @@ int menu()
 
 void spacePractice()
 {
-	int word, how, wrong, acc, insert;
+	int how, wrong, acc, insert;
+	short word;
 	char input;
 	wrong = how = insert = acc = 0;
 	while (how <= 20)
@@ -75,8 +95,7 @@ void spacePractice()
 			input = 0;
 			if (insert != 0)
 				acc = 100 - (100 * wrong / insert);
-			//system("clear");	// 리눅스 clear	
-			system("cls");
+			system("clear");
 			printf(">> 영문 타자 연습 프로그램 : 자리 연습 <<\n");
 			printf("진행도 : %d%%	오타수 : %d		정확도 : %d%%\n\n", (how * 100 / 20), wrong, acc);
 			printf("%c\n-\n", word);
@@ -95,8 +114,9 @@ void spacePractice()
 
 void wordPractice()
 {
-	int how, wrong, acc, insert, myWord;
-	char *word[] = { "hello", "hi", "help" };
+	int how, wrong, acc, insert;
+	short myWord;
+	char *word[] = { "hello", "hi", "help", "apple", "school", "university", "program", "drink", "do", "like", "mean", "word", "hair", "close", "clear", "Buffer", "note", "book", "speak", "listen"};
 	char input[20] = { NULL };
 
 	wrong = how = insert = acc = myWord = 0;
@@ -104,16 +124,15 @@ void wordPractice()
 	while (how <= 20)
 	{
 		srand(time(NULL));
-		myWord = (rand() % 3);
+		myWord = (rand() % 20);
 		while (1)
 		{
 			if (insert != 0)
 				acc = 100 - (100 * wrong / insert);
-			//system("clear");	// 리눅스 clear	
-			system("cls");
+			system("clear");
 			printf(">> 영문 타자 연습 프로그램 : 낱말 연습 <<\n");
 			printf("진행도 : %d%%	오타수 : %d		정확도 : %d%%\n\n", (how * 100 / 20), wrong, acc);
-			puts(word[myWord]); // 개행 수정
+			puts(word[myWord]);
 			fgets(input, sizeof(input), stdin);
 
 			if (input[strlen(input) - 1] == '\n')
@@ -135,70 +154,51 @@ void wordPractice()
 
 void shortScript()
 {
-	char sScript[][30] = { "I like A.", "I like B.", "I like C.", "I like D.", "I like E.", "I like F.", "I like G.", "I like H.", "I like I.", "I like J.", "I like K.", "I like L.", "I like M.", "I like N.", "I like O.", "I like P.", "I like Q.", "I like R.", "I like S.", "I like T.", "I like U.", "I like V.", "I like W.", "I like X.", "I like Y.", "I like Z.", "I like a.", "I like b.", "I like c.", "I like d." };
-	char inputScript[30];
-	int cnt1, cnt2, pgs, acc, wl, n, x, q;
-	unsigned ct = 0, ht = 0, gap = 0;
-	clock_t start, end;
-	cnt1 = cnt2 = pgs = acc = wl = ct = ht = gap = 0;
-	//system("clear");	// 리눅스 clear	
-	system("cls");
+	char sScript[][30] = { "I like A.", "I like B.", "I like C.", "I like D.", "I like E.", "I like F.", "I like G.", "I like H.",\
+		"I like I.", "I like J.", "I like K.", "I like L.", "I like M.", "I like N.", "I like O.", "I like P.", "I like Q.",\
+		"I like R.", "I like S.", "I like T.", "I like U.", "I like V.", "I like W.", "I like X.", "I like Y.", "I like Z.",\
+		"I like a.", "I like b.", "I like c.", "I like d." };
+	char inputScript[30] = { NULL };
+	int how, nTasu, MTasu, acc, wrong, cnt;
+	short randS;
 
-	srand(time(NULL));
-	while (pgs != 100)
+	struct timeval start;
+	struct timeval end;
+	how = nTasu = MTasu = acc = wrong = 0;
+
+	while (how < 30)
 	{
-		x = rand() % 29;
-		for (int i = 0; i < 30; i++)
-			inputScript[i] = NULL;
-
+		cnt = 0;
+		srand(time(NULL));
+		randS = (rand() % 30);
 		while (1)
 		{
-			start = clock();
-			cnt1 = 0;
+			system("clear");
 			printf(">> 영문 타자 연습 프로그램 : 짧은 글 연습 <<\n");
-			printf("진행도 : %d%%, 현재타수 : %u, 최고타수 : %u, 정확도 : %d%%  ([Esc] 키를 통해 메뉴로)\n", pgs, ct, ht, acc);
+			printf("진행도 : %d%%  현재타수 : %d%%  최고타수 : %d%%  정확도 : %d%%\n\n", (how*100)/30, nTasu, MTasu, acc);
 
-			for (int i = 0; sScript[x][i] != NULL; i++, cnt1++)
-				printf("%c", sScript[x][i]);
-
-			printf("\n");
-
-			for (int i = 0; i < cnt2; i++)
+			puts(sScript[randS]);
+			for (int i = 0; i < cnt; i++)
 				printf("%c", inputScript[i]);
-			inputScript[cnt2] = getch();
-			end = clock();
-			if (inputScript[cnt2] == 27 || inputScript[cnt2] == '\n')
+			printf("\n");
+			gettimeofday(&start, NULL);
+			inputScript[cnt] = getch();
+			if (inputScript[cnt] == 8 && cnt > 0)
+				cnt--;
+			else if (inputScript[cnt] == 27 || inputScript[cnt] == 10)
 				break;
-			else if (inputScript[cnt2] == 127)
-				cnt2 = cnt2 - 2;
-			wl = 0;
-			for (int i = 0; i <= cnt2; i++)
-				if (inputScript != sScript[x][i])
-					wl++;
+			else
+				cnt++;
+			gettimeofday(&end, NULL);
+			nTasu = cnt / ((&end - &start) * 3600);
+			if (nTasu > MTasu)
+				MTasu = nTasu;
 
-			if (cnt2 >= 0 && cnt2 < cnt1)
-				acc = (double)(cnt2 + 1 - wl) / (cnt2 + 1) * 100;
-			else if (cnt2 < 0)
-			{
-				acc = 0;
-				cnt2 = -1;
-			}
-			gap = (double)end - start;
-			if (wl != cnt2 + 1)
-				ct = (double)(cnt2 + 1 - wl) / gap * 60;
-			if (ct > ht)
-				ht = ct;
-			cnt2++;
-			system("cls");
-			//system("clear");
 		}
-		if (inputScript[cnt2] == 27)
+		if (inputScript[cnt] == 27)
 			break;
-		pgs += 20;
-		if (pgs != 100)
-		{
-			acc = 0;
-			cnt2 = 0;
-		}
+		for (int i = 0; i <= cnt; i++)
+			inputScript[i] = NULL;
+		how++;
 	}
 }
