@@ -159,7 +159,7 @@ void shortScript()
 		"I like R.", "I like S.", "I like T.", "I like U.", "I like V.", "I like W.", "I like X.", "I like Y.", "I like Z.",\
 		"I like a.", "I like b.", "I like c.", "I like d." };
 	char inputScript[30] = {NULL};
-	int how, nTasu, MTasu, acc, wrong, cnt, cntTasu,i;
+	int how, nTasu, MTasu, acc, wrong, cnt, cntTasu, i;
 	double cTime, eTime;
 	short randS;
 
