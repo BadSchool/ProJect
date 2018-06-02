@@ -2,13 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-//#include <conio.h>
 #include <sys/time.h>	
 #include <unistd.h>	
 #include <termios.h>
 
 #define TRUE 1
 #define FALSE 0
+#define NULL '\0'
 
 void clearBuffer();	// 버퍼 정리
 int menu();		// 메뉴
@@ -158,47 +158,77 @@ void shortScript()
 		"I like I.", "I like J.", "I like K.", "I like L.", "I like M.", "I like N.", "I like O.", "I like P.", "I like Q.",\
 		"I like R.", "I like S.", "I like T.", "I like U.", "I like V.", "I like W.", "I like X.", "I like Y.", "I like Z.",\
 		"I like a.", "I like b.", "I like c.", "I like d." };
-	char inputScript[30] = { NULL };
-	int how, nTasu, MTasu, acc, wrong, cnt;
+	char inputScript[30] = {NULL};
+	int how, nTasu, MTasu, acc, wrong, cnt, cntTasu,i;
+	double cTime, eTime;
 	short randS;
 
-	struct timeval start;
-	struct timeval end;
-	how = nTasu = MTasu = acc = wrong = 0;
+	struct timeval start, end, errorS, errorE;
+	how = nTasu = MTasu = acc = wrong = cntTasu = 0;
 
-	while (how < 30)
+	while (how < 5)
 	{
-		cnt = 0;
+		cnt = nTasu = acc = 0;
 		srand(time(NULL));
 		randS = (rand() % 30);
+
+		for(i = 0; i < 30; i++)
+			inputScript[i] = NULL;
+
+		gettimeofday(&start, NULL);
 		while (1)
 		{
+			gettimeofday(&errorS, NULL);
 			system("clear");
 			printf(">> 영문 타자 연습 프로그램 : 짧은 글 연습 <<\n");
-			printf("진행도 : %d%%  현재타수 : %d%%  최고타수 : %d%%  정확도 : %d%%\n\n", (how*100)/30, nTasu, MTasu, acc);
-
+			printf("진행도 : %d%%  현재타수 : %d  최고타수 : %d  정확도 : %d%%\n\n", (how * 100) / 5, nTasu, MTasu, acc);
 			puts(sScript[randS]);
-			for (int i = 0; i < cnt; i++)
+			for (i = 0; i < cnt; i++)
 				printf("%c", inputScript[i]);
 			printf("\n");
-			gettimeofday(&start, NULL);
+
 			inputScript[cnt] = getch();
+			gettimeofday(&errorE, NULL);
+			gettimeofday(&end, NULL);
 			if (inputScript[cnt] == 8 && cnt > 0)
 				cnt--;
 			else if (inputScript[cnt] == 27 || inputScript[cnt] == 10)
 				break;
-			else
+			else if(cnt >= 0)
 				cnt++;
-			gettimeofday(&end, NULL);
-			nTasu = cnt / ((&end - &start) * 3600);
+
+			
+			wrong = 0;
+			for(i = 0; i < cnt; i++)
+				if(sScript[randS][i] != inputScript[i])
+					wrong++;
+
+			cntTasu = cnt - wrong;
+			eTime = (errorE.tv_sec + errorE.tv_usec / 1000000.0) - (errorS.tv_sec + errorS.tv_usec / 1000000.0);
+			cTime = (end.tv_sec + end.tv_usec / 1000000.0) - (start.tv_sec + start.tv_usec / 1000000.0);
+			cTime -= eTime;
+
+			nTasu = (cntTasu / cTime) * 60;
+
+			if(cnt != 0)
+				acc = 100 - (100 * wrong / cnt);
+			else
+				acc = 0;
+
 			if (nTasu > MTasu)
 				MTasu = nTasu;
-
 		}
+
 		if (inputScript[cnt] == 27)
 			break;
-		for (int i = 0; i <= cnt; i++)
+		for (i = 0; i <= cnt; i++)
 			inputScript[i] = NULL;
+
 		how++;
+	}
+	if (inputScript[cnt] != 27)
+	{
+		printf("짧은 글 연습이 끝났습니다. 아무키나 누르시면 메뉴로 돌아갑니다.");
+		getch();
 	}
 }
